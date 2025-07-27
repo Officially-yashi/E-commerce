@@ -1,5 +1,46 @@
 <template>
+ 
   <div class="p-4">
+    <!-- PRODUCT MODAL WITH CAROUSEL -->
+    <div v-if="selectedProduct" :key="selectedProduct.id" class="fixed inset-0 bg-black  flex justify-center items-center z-50" @click.self="selectedProduct = null">
+      <div class="bg-white p-6 rounded-lg shadow-xl max-w-3xl w-full relative">
+        <!-- Close Button -->
+        <button @click="selectedProduct = null" class="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl">
+          &times;
+        </button>
+
+        <div class="flex flex-col md:flex-row gap-4">
+          <!-- Carousel -->
+          <carousel
+  v-if="selectedProduct.images && selectedProduct.images.length"
+  :per-page="1"
+  :navigation-enabled="true"
+  :pagination-enabled="true"
+  class="w-full md:w-1/2 h-64"
+>
+  <slide v-for="(img, index) in selectedProduct.images" :key="index">
+    <img :src="img" alt="Product Image" class="w-full h-64 object-contain rounded" />
+  </slide>
+</carousel>
+
+<!-- fallback if no images -->
+<div v-else class="w-full md:w-1/2 h-64 flex items-center justify-center bg-gray-100 rounded">
+  <p class="text-gray-500">No images available</p>
+</div>
+
+
+          <!-- Product Details -->
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold mb-2">{{ selectedProduct.title }}</h2>
+            <p class="text-gray-500 capitalize mb-2">{{ selectedProduct.category }}</p>
+            <p class="text-lg text-blue-600 font-semibold mb-4">${{ selectedProduct.price }}</p>
+            <p class="text-gray-700">{{ selectedProduct.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
         v-for="product in paginatedProducts"
@@ -11,27 +52,26 @@
         <p class="text-gray-500 capitalize">{{ product.category }}</p>
         <p class="text-blue-600 font-bold mt-1">${{ product.price }}</p>
 
+        <button
+          :disabled="isInCart(product.id)"
+          @click="handleAddToCart(product)"
+          :class="[
+            'mt-2 py-2 px-4 rounded transition duration-300',
+            isInCart(product.id)
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          ]"
+        >
+          {{ isInCart(product.id) ? 'Already in Cart' : 'Add to cart' }}
+        </button>
 
-     <button
-        :disabled="isInCart(product.id)"
-        @click="handleAddToCart(product)"
-        :class="[
-          'mt-2 py-2 px-4 rounded transition duration-300',
-          isInCart(product.id)
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 text-white hover:bg-blue-700'
-        ]"
-      >
-        {{ isInCart(product.id) ? 'Already in Cart' : 'Add to cart' }}
-      </button>
-
-          <button @click="fetchProductDetails(product.id)"  class="bg-blue-600 text-white py-2 px-4 mx-4 rounded hover:bg-blue-700 transition duration-300">
- View
-</button>
+        <button @click="fetchProductDetails(product.id)" class="bg-blue-600 text-white py-2 px-4 mx-4 rounded hover:bg-blue-700 transition duration-300">
+          View
+        </button>
       </div>
     </div>
 
-    <!-- Pagination Buttons -->
+    <!-- Pagination -->
     <div class="flex justify-center mt-6 space-x-2">
       <button
         v-for="page in totalPages"
@@ -46,38 +86,26 @@
         {{ page }}
       </button>
     </div>
-    <div v-if="selectedProduct" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full relative">
-        <button @click="selectedProduct = null" class="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl">
-          &times;
-        </button>
-
-        <div class="flex flex-col md:flex-row gap-4">
-         <carousel :per-page="1" :navigation-enabled="true" class="w-full md:w-1/2 h-64">
-  <slide v-for="(img, index) in selectedProduct.images" :key="index">
-    <img :src="img" alt="Product Image" class="w-full h-64 object-contain rounded" />
-  </slide>
-</carousel>
-
-          <div class="flex-1">
-            <h2 class="text-2xl font-bold mb-2">{{ selectedProduct.title }}</h2>
-            <p class="text-gray-500 capitalize mb-2">{{ selectedProduct.category }}</p>
-            <p class="text-lg text-blue-600 font-semibold mb-4">${{ selectedProduct.price }}</p>
-            <p class="text-gray-700">{{ selectedProduct.description }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    </div>
-  
+  </div>
 </template>
+
+  
+
 
 <script>
 import axios from "axios";
 import { Carousel, Slide } from 'vue-carousel';
 
+
+
+
+
 export default {
   name: "ProductCard",
+    components: {
+  Carousel,
+  Slide
+},
   data() {
     return {
       currentPage: 1,
@@ -99,16 +127,16 @@ export default {
       return this.products.slice(start, end);
     },
   },
-  components: {
-  Carousel,
-  Slide
-},
+
 
 methods:{
    async fetchProductDetails(productId) {
       try {
         const res = await axios.get(`https://dummyjson.com/products/${productId}`);
         this.selectedProduct = res.data; // Set product to show in modal
+        console.log("Fetched product images:", res.data.images);
+            console.log("Image count:", this.selectedProduct.images.length); 
+
       } catch (error) {
         console.error("Failed to fetch product details:", error);
       }
@@ -126,6 +154,7 @@ methods:{
   
   created() {
     this.$store.dispatch("fetchProducts");
+    
   },
 };
 </script>

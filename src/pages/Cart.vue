@@ -5,7 +5,9 @@
   <div class="p-6">
     <Navbar />
     <h1 class="text-2xl font-bold mb-6">Your Cart</h1>
-
+         <div v-if="cartItems.length === 0" class="text-center text-gray-600">
+      Your cart is empty.
+    </div>
     <table class="min-w-full bg-white rounded shadow overflow-hidden">
       <thead>
         <tr class="bg-gray-100 text-left text-sm font-semibold text-gray-700">
@@ -14,6 +16,7 @@
           <th class="py-3 px-4">Price</th>
           <th class="py-3 px-4">Quantity</th>
           <th class="py-3 px-4">Total</th>
+          <th class="p-2  px-4">Remove</th>
         </tr>
       </thead>
       <tbody>
@@ -48,6 +51,9 @@
           <td class="py-3 px-4 font-semibold">
             ${{ item.price * item.quantity }}
           </td>
+           <td class="p-2">
+            <button @click="remove(item.id)" class="text-red-600 text-lg">✖</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -80,6 +86,9 @@ export default {
     },
     decreaseQty(id) {
       this.$store.commit("DECREMENT_QUANTITY", id);
+    },
+     remove(id) {
+      this.$store.dispatch("removeFromCart", id);
     },
     logout() {
   localStorage.removeItem('token');          // remove login token

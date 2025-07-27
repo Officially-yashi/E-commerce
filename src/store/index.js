@@ -27,6 +27,7 @@ export default new Vuex.Store({
 ,
 LOGOUT(state) {
   state.loggedInUser = null;
+   
 }
 ,
        setProducts(state, products) {
