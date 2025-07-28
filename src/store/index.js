@@ -11,6 +11,7 @@ export default new Vuex.Store({
         loggedInUser:null,
         products:[],
         cart:[],
+         selectedProduct: null,
         
     },
     mutations:{
@@ -33,6 +34,9 @@ LOGOUT(state) {
        setProducts(state, products) {
         state.products = products;
      },
+     setSelectedProduct(state, product) {
+    state.selectedProduct = product;
+  },
 
 ADD_TO_CART(state, product) {
   const email = state.loggedInUser?.email;
@@ -101,14 +105,21 @@ const key = `cart_${email}`;
     actions:{
       signup({ commit, state }, user) {
      const existing = state.users.find(u => u.email === user.email);
-     if (existing) {
-   throw new Error ("Email already exists");
-  }
+      if (existing) {
+    throw new Error ("Email already exists");
+    }
   commit('ADD_USER', user);
 }, 
     async fetchProducts({ commit }) {
     const res = await axios.get('https://dummyjson.com/products');
     commit('setProducts', res.data.products);
+  },
+  setSelectedProduct({ commit }, product) {
+    commit("setSelectedProduct", product);
+  },
+  selectProductByName({ state, commit }, name) {
+    const product = state.products.find(p => p.title.toLowerCase() === name.toLowerCase());
+    commit('setSelectedProduct', product || null);
   },
 
   addToCart({commit},product){
@@ -125,7 +136,13 @@ removeFromCart({ commit }, id) {
 },
  clearCart({ commit }) {
     commit('CLEAR_CART');
-  }
+  },
+  selectProduct(title) {
+  this.$store.dispatch("selectProductByName", title);
+  this.searchTerm = title;
+  this.showResults = false;
+}
+
     },
     getters:{
         getUsers(state){
@@ -136,6 +153,9 @@ removeFromCart({ commit }, id) {
         },
         getAllProducts(state){
            return state.products;
+        },
+         getSelectedProduct(state){
+           return state.selectedProduct;
         },
          getSearchTerm: (state) => state.searchTerm,
         
