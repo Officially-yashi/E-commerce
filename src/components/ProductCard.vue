@@ -1,16 +1,16 @@
 <template>
  
   <div class="p-4">
-    <!-- PRODUCT MODAL WITH CAROUSEL -->
+   
     <div v-if="selectedProduct" :key="selectedProduct.id" class="fixed inset-0 bg-black  flex justify-center items-center z-50" @click.self="selectedProduct = null">
       <div class="bg-white p-6 rounded-lg shadow-xl max-w-3xl w-full relative">
-        <!-- Close Button -->
+       
         <button @click="selectedProduct = null" class="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl">
           &times;
         </button>
 
         <div class="flex flex-col md:flex-row gap-4">
-          <!-- Carousel -->
+         
           <carousel
   v-if="selectedProduct.images && selectedProduct.images.length"
   :per-page="1"
@@ -23,13 +23,13 @@
   </slide>
 </carousel>
 
-<!-- fallback if no images -->
+
 <div v-else class="w-full md:w-1/2 h-64 flex items-center justify-center bg-gray-100 rounded">
   <p class="text-gray-500">No images available</p>
 </div>
 
 
-          <!-- Product Details -->
+      
           <div class="flex-1">
             <h2 class="text-2xl font-bold mb-2">{{ selectedProduct.title }}</h2>
             <p class="text-gray-500 capitalize mb-2">{{ selectedProduct.category }}</p>
@@ -40,7 +40,7 @@
       </div>
     </div>
 
-    <!-- Product Cards -->
+ 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div
         v-for="product in paginatedProducts"
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <!-- Pagination -->
+  
     <div class="flex justify-center mt-6 space-x-2">
       <button
         v-for="page in totalPages"

@@ -20,6 +20,12 @@ const router = new Router({
       component: Home,
       meta: { requiresAuth: true }
     },
+    {
+      path: '/cart',
+      name: 'Cart',
+      component: Cart,
+      meta: { requiresAuth: true }
+    },
     { path: '*', redirect: '/login' } ,
     { path: '/cart', name: 'Cart', component: Cart}
   ]

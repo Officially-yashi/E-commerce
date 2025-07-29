@@ -1,4 +1,5 @@
 <template>
+<div>
   <div class="w-[800px] flex justify-center mt-2 relative">
     <input
       v-model="searchTerm"
@@ -7,13 +8,13 @@
       autocomplete="new-password"
       :readonly="isReadonly"
       @focus="isReadonly = false"
-      @input="handleInput"
+      @input="debouncedInput"
       class="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
 
     <div
       v-if="showResults"
-      class="absolute bg-white border mt-1 w-full shadow-lg z-10"
+      class="absolute mt-1 w-full shadow-lg z-10"
     >
       <div class="flex justify-end">
         <button
@@ -27,7 +28,7 @@
   v-for="product in filteredProducts"
   :key="product.id"
   class="p-3 border-b hover:bg-gray-100 cursor-pointer"
-  @click="selectProduct(product.title)"
+  @click="selectProduct(product)"
 >
   {{ product.title }}
 </div>
@@ -36,20 +37,47 @@
         No matching products.
       </div>
     </div>
-    <div
-  v-if="selectedProduct"
-  class="mt-4 w-[800px] mx-auto border p-4 rounded shadow bg-gray-50"
->
-  <h2 class="text-lg font-bold mb-2">{{ selectedProduct.title }}</h2>
-  <p class="text-gray-700 mb-1">Price: ₹{{ selectedProduct.price }}</p>
-  <p class="text-gray-600">Description: {{ selectedProduct.description }}</p>
-</div>
-
   </div>
+
+
+<div
+  v-if="selectedProduct"
+  class=" fixed inset-0 flex items-centerjustify-center items-center min-h-screen z-50"
+  
+>
+
+  <div class="w-[800px] border p-6 rounded-xl shadow-lg bg-white  relative">
+   
+   
+  <button
+  @click="selectedProduct = null"
+  class="absolute top-2 right-2 bg-red-500 text-white text-2xl px-3 py-1 rounded z-50"
+>
+  ✖
+</button>
+
+    <h2 class="text-xl font-bold mb-4 text-center">{{ selectedProduct.title }}</h2>
+
+    <div class="flex justify-center mb-4">
+      <img
+        :src="selectedProduct.image"
+        alt="Product Image"
+        class="w-40 h-40 object-contain rounded shadow"
+      />
+    </div>
+
+    <p class="text-gray-700 text-lg text-center mb-2">Price: ₹{{ selectedProduct.price }}</p>
+    <p class="text-gray-600 text-center">{{ selectedProduct.description }}</p>
+
+
+</div>
+</div>
+</div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+import debounce from "lodash/debounce";
 
 export default {
   data() {
@@ -57,10 +85,11 @@ export default {
       searchTerm: "",
       isReadonly: true,
       showResults: false,
+      selectedProduct: null,
     };
   },
   computed: {
-    ...mapGetters(["getAllProducts"]),
+    ...mapGetters(["getAllProducts",'getSearchTerm','getShowResults','getSelectedProduct']),
     filteredProducts() {
       const term = this.searchTerm.trim().toLowerCase();
       if (!term) return [];
@@ -68,7 +97,6 @@ export default {
         product.title.toLowerCase().includes(term)
       );
     },
-   
   },
   methods: {
     handleInput() {
@@ -77,16 +105,28 @@ export default {
     clearSuggestions() {
       this.searchTerm = "";
       this.showResults = false;
+      this.selectedProduct = null;
     },
+    submitSearch() {
+    console.log("Searched:", this.searchTerm);
+    
+    this.searchTerm = "";
+    },
+    selectProduct(product) {
+      this.searchTerm = product.title;
+      this.selectedProduct = product;
+      this.showResults = false;
+    },
+ productToShow() {
+    return this.getSelectedProduct;
+  },
+   
+    debouncedInput: debounce(function () {
+      this.handleInput();
+    }, 800),
   },
   created() {
     this.$store.dispatch("fetchProducts");
   },
-  
-  selectProduct(title) {
-    this.searchTerm = title;
-    this.showResults = false;
-    this.$store.dispatch("selectProductByName", title);
-  }
 };
 </script>

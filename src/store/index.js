@@ -12,6 +12,9 @@ export default new Vuex.Store({
         products:[],
         cart:[],
          selectedProduct: null,
+           filteredProducts: [],
+            searchTerm: '',
+          showResults: false,
         
     },
     mutations:{
@@ -33,9 +36,14 @@ LOGOUT(state) {
 ,
        setProducts(state, products) {
         state.products = products;
+         state.filteredProducts = products; 
      },
+     
      setSelectedProduct(state, product) {
     state.selectedProduct = product;
+  },
+   clearSelectedProduct(state) {
+    state.selectedProduct = null;
   },
 
 ADD_TO_CART(state, product) {
@@ -90,15 +98,20 @@ const key = `cart_${email}`;
 },
   SET_SEARCH_TERM(state, term) {
     state.searchTerm = term;
+     state.showResults = !!term;
   },
     CLEAR_CART(state) {
       const email = state.loggedInUser?.email;
-if (!email) return;
-state.cart = [];
-const key = `cart_${email}`;
+      if (!email) return;
+     state.cart = [];
+     const key = `cart_${email}`;
     localStorage.removeItem(key);
    
   },
+    clearSearch(state) {
+    state.searchTerm = '';
+    state.showResults = false;
+  }
   
     },
 
@@ -117,9 +130,9 @@ const key = `cart_${email}`;
   setSelectedProduct({ commit }, product) {
     commit("setSelectedProduct", product);
   },
-  selectProductByName({ state, commit }, name) {
-    const product = state.products.find(p => p.title.toLowerCase() === name.toLowerCase());
-    commit('setSelectedProduct', product || null);
+  selectProductByName({ commit, state }, title) {
+    const product = state.products.find(p => p.title.toLowerCase() === title.toLowerCase());
+    commit("setSelectedProduct", product  || null);
   },
 
   addToCart({commit},product){
@@ -152,12 +165,16 @@ removeFromCart({ commit }, id) {
             return state.loggedInUser;
         },
         getAllProducts(state){
-           return state.products;
+           return state.products||[];
+        },
+         getfilteredProducts(state){
+           return state.filteredProducts;
         },
          getSelectedProduct(state){
            return state.selectedProduct;
         },
-         getSearchTerm: (state) => state.searchTerm,
+          getSearchTerm: state => state.searchTerm,
+  getShowResults: state => state.showResults,
         
         getCartItems:(state)=>state.cart,
         getCartCount:(state)=>state.cart.length,
