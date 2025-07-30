@@ -39,30 +39,40 @@ export default {
             email:'',
             password:'',
             contact:'',
+            error: '',
+            loading: false
         };
     },
     methods:{
         async handleSignup(){
-            const user={
+          console.log("Dispatching signup"); 
+      this.loading = true;
+      this.error = '';
+            try{
+                const res= await this.$store.dispatch('auth/signup',{
                 name:this.name,
                 email:this.email,
                 password:this.password,
                 contact:this.contact,
-            };
-          try{
+            });
+            console.log("Signup success, redirecting");
+                  if (res.status === 201 || res.status === 200) {
+                  console.log(" Signup successful. Redirecting to login...");
+                  this.$router.push('/login');
+                  } else {
+                 console.log( "Signup failed. Please try again.");
+                }
+         
+            }
+            catch(err){
+                this.error='singup failed';
+            }
+            finally{
+                this.loading=false;
+            }
           
-          await this.$store.dispatch('signup',user);
-          console.log("user dispatch")
            
-            //redirect after signup---------
-            
-  console.log("Stored users:", this.$store.getters.getUsers);
 
-            this.$router.push('/login');
-          }
-          catch(err){
-             alert(err.message);
-          }
         },
     },
 };

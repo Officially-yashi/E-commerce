@@ -69,16 +69,16 @@ export default {
     name:'Navbar',
   methods:{
     logout(){
-   
-      this.$store.commit('LOGOUT'),
-      this.$router.push('/signup');
+     this.$store.dispatch('auth/logout');
+      this.$router.push('/login').catch(()=>{}); 
     }
   },
   computed:{
     cartCount(){
-      return this.$store.getters.getCartCount;
-    }
+      return this.$store.getters['auth/getCartCount'];
   }
+    }
+  
 }
 </script>
 

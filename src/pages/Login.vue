@@ -5,12 +5,23 @@
         <form @submit.prevent="handleLogin">
             <div class="mb-4">
             <label class="block text-gray-700 mb-2" for="email" >Email:</label>
-            <input v-model="email" type="email" placeholder="enter the email" required class="w-full px-4 py-2 border rounded" />
+            <input v-model="email" name="email" type="email" placeholder="enter the email"  autocomplete="off" required  class="w-full px-4 py-2 border rounded" />
             </div>
 
             <div class="mb-4">
-            <label class="block text-gray-700 mb-2" for="password" >Password:</label>
-            <input v-model="password" type="password" placeholder="enter the password" required class="w-full px-4 py-2 border rounded"/>
+            <label class="block text-gray-700 mb-2" for="password" autocomplete="new-password" required  >Password:</label>
+              <input
+            v-model="password"
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter the password"
+            autocomplete="new-password"
+            :readonly="passwordReadonly"
+            @focus="passwordReadonly = false"
+            required
+            class="w-full px-4 py-2 border rounded"
+          />
             </div>
 
             <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700" type="submit">Login</button>
@@ -30,26 +41,38 @@ export default {
         return{
             email:'',
             password:'',
-            error:''
+            error:'',
+            loading:false
         }
     },
     methods:{
-        handleLogin(){
-            const users=this.$store.getters.getUsers;
+        
+        async handleLogin(){
+            console.log("handlelogin");
+            this.error='';
+            this.loading=true;
+
+            try{
+                console.log("yes")
+                await this.$store.dispatch('auth/login', {
+                email: this.email,
+               password: this.password,
+            });
+
+            console.log("Login success");
+             this.$router.push('/home');
            
-            console.log("users in store:",users);
+        
+         console.log("navigated to home")
 
-            const user=users.find(u=>u.email===this.email && u.password===this.password);
-
-            if(user){
-                this.$store.commit('SET_LOGGED_IN_USER',user);
-                console.log('Logged in:',user);
-                this.$router.push('/home');
-            }
-            else{
-              alert("Invalid email or password ");
-            }
         }
+        catch(err){
+            this.error='login failed'
+        }
+        finally{
+            this.loading=false;
+        }
+    }
     }
 }
 </script>

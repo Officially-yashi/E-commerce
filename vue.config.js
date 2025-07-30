@@ -3,7 +3,7 @@
 module.exports = {
   devServer: {
     host: '0.0.0.0',
-    port: 7000, // or any port you want
+    port: 5000, // or any port you want
   },
 };
 

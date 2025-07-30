@@ -2,10 +2,14 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
 import axios from 'axios';
+import auth from './modules/auth.js';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+modules:{
+  auth
+},
     state:{
         users:[],
         loggedInUser:null,
@@ -22,8 +26,9 @@ export default new Vuex.Store({
             state.users.push(user);
         },
         
-   SET_LOGGED_IN_USER(state, user) {
-  state.loggedInUser = user;
+        SET_LOGGED_IN_USER(state, user) {
+        state.loggedInUser = user;
+  localStorage.setItem('loggedInUser', JSON.stringify(user)); 
   const key = `cart_${user.email}`;
   const savedCart = JSON.parse(localStorage.getItem(key)) || [];
   state.cart = savedCart;
@@ -31,10 +36,10 @@ export default new Vuex.Store({
 ,
 LOGOUT(state) {
   state.loggedInUser = null;
-   
+   localStorage.removeItem('loggedInUser'); 
 }
 ,
-       setProducts(state, products) {
+     setProducts(state, products) {
         state.products = products;
          state.filteredProducts = products; 
      },
@@ -47,22 +52,13 @@ LOGOUT(state) {
   },
 
 ADD_TO_CART(state, product) {
-  const email = state.loggedInUser?.email;
-  if (!email) return;
-
-  const key = `cart_${email}`;
-  const cart = JSON.parse(localStorage.getItem(key)) || [];
-
-  const existing = cart.find((item) => item.id === product.id);
-  if (existing) {
-    existing.quantity += 1;
-  } else {
-    cart.push({ ...product, quantity: 1 });
+  const exists = state.cart.some(item => item._id === product._id);
+  if (!exists) {
+    state.cart.push(product);
+    localStorage.setItem("cart", JSON.stringify(state.cart)); // Optional persistence
   }
-
-  state.cart = cart;
-  localStorage.setItem(key, JSON.stringify(state.cart));
-},
+}
+,
 
   INCREMENT_QUANTITY(state, productId) {
       const email = state.loggedInUser?.email;
@@ -108,6 +104,9 @@ const key = `cart_${email}`;
     localStorage.removeItem(key);
    
   },
+  SET_CART(state, cartItems) {
+      state.cart = cartItems;
+    },
     clearSearch(state) {
     state.searchTerm = '';
     state.showResults = false;
@@ -123,6 +122,12 @@ const key = `cart_${email}`;
     }
   commit('ADD_USER', user);
 }, 
+  initializeAuth({ commit }) {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (user) {
+      commit("SET_LOGGED_IN_USER", user);
+    }
+  },
     async fetchProducts({ commit }) {
     const res = await axios.get('https://dummyjson.com/products');
     commit('setProducts', res.data.products);
@@ -155,8 +160,7 @@ removeFromCart({ commit }, id) {
   this.searchTerm = title;
   this.showResults = false;
 }
-
-    },
+ },
     getters:{
         getUsers(state){
             return state.users;
@@ -174,7 +178,7 @@ removeFromCart({ commit }, id) {
            return state.selectedProduct;
         },
           getSearchTerm: state => state.searchTerm,
-  getShowResults: state => state.showResults,
+         getShowResults: state => state.showResults,
         
         getCartItems:(state)=>state.cart,
         getCartCount:(state)=>state.cart.length,

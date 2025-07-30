@@ -53,17 +53,17 @@
         <p class="text-blue-600 font-bold mt-1">${{ product.price }}</p>
 
         <button
-          :disabled="isInCart(product.id)"
-          @click="handleAddToCart(product)"
-          :class="[
-            'mt-2 py-2 px-4 rounded transition duration-300',
-            isInCart(product.id)
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          ]"
-        >
-          {{ isInCart(product.id) ? 'Already in Cart' : 'Add to cart' }}
-        </button>
+  :disabled="isInCart(product.id)"
+  @click="handleAddToCart(product)"
+  :class="[
+    'mt-2 py-2 px-4 rounded transition duration-300',
+    isInCart(product.id)
+      ? 'bg-gray-400 cursor-not-allowed'
+      : 'bg-blue-600 text-white hover:bg-blue-700'
+  ]"
+>
+  {{ isInCart(product.id) ? 'Already in Cart' : 'Add to cart' }}
+</button>
 
         <button @click="fetchProductDetails(product.id)" class="bg-blue-600 text-white py-2 px-4 mx-4 rounded hover:bg-blue-700 transition duration-300">
           View
@@ -89,16 +89,9 @@
   </div>
 </template>
 
-  
-
-
 <script>
 import axios from "axios";
 import { Carousel, Slide } from 'vue-carousel';
-
-
-
-
 
 export default {
   name: "ProductCard",
@@ -113,7 +106,7 @@ export default {
       selectedProduct:null,
     };
   },
-  computed: {
+  computed: { 
     products() {
   return this.$store.getters.getAllProducts;
 }
@@ -126,6 +119,12 @@ export default {
       const end = start + this.itemsPerPage;
       return this.products.slice(start, end);
     },
+     alreadyInCart() {
+    const productId = String(this.product._id || this.product.id);
+    return this.$store.state.cart.some(
+      item => String(item._id || item.id) === productId
+    );
+  }
   },
 
 
@@ -133,9 +132,9 @@ methods:{
    async fetchProductDetails(productId) {
       try {
         const res = await axios.get(`https://dummyjson.com/products/${productId}`);
-        this.selectedProduct = res.data; // Set product to show in modal
+        this.selectedProduct = res.data; 
         console.log("Fetched product images:", res.data.images);
-            console.log("Image count:", this.selectedProduct.images.length); 
+        console.log("Image count:", this.selectedProduct.images.length); 
 
       } catch (error) {
         console.error("Failed to fetch product details:", error);
@@ -143,18 +142,36 @@ methods:{
     },
 
     isInCart(productId) {
-      return this.$store.getters.getCartItems.some((item) => item.id === productId);
+       const cart = this.$store.getters['auth/getCartItems'];
+      return cart && cart.some((item) => item._id === productId || item.id === productId);
     },
+
     handleAddToCart(product) {
-      if (!this.isInCart(product.id)) {
-        this.$store.dispatch("addToCart", product);
-      }
+       console.log("Clicked Add to Cart for:", product);
+      const user = this.$store.getters['auth/getLoggedInUser'];
+      if (!user) {
+      alert("Please log in to add products to cart.");
+      this.$router.push('/login').catch(() => {});
+      return;
+    }
+    if (!this.isInCart(product.id)) {
+      console.log("Dispatching to auth/addToCart");
+    this.$store.dispatch("auth/addToCart", product)
+  }
+   else {
+    console.log("Product already in cart");
+  }
     },
 },
   
   created() {
     this.$store.dispatch("fetchProducts");
-    
+      this.$store.dispatch("auth/tryAutoLogin");
   },
+  watch: {
+  '$store.getters.getCartItems'() {
+    this.$forceUpdate();
+  }
+}
 };
 </script>
