@@ -83,7 +83,7 @@ export default {
       this.$store.commit("auth/INCREMENT_QUANTITY", id);
     },
     decreaseQty(id) {
-      this.$store.commit("auth/DECREMENT_QUANTITY", id);
+      this.$store.commit("auth/DECREASE_QUANTITY", id);
     },
      remove(id) {
       this.$store.dispatch("auth/removeFromCart", id);

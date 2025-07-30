@@ -9,32 +9,20 @@ const mutations ={
   state.cart = cart;
 },
 ADD_TO_CART(state, product) {
-  console.log("Inside ADD_TO_CART mutation");
-
   const userId = state.loggedInUser?._id || state.loggedInUser?.id;
   if (!userId) return;
 
-  const key = `cart_${userId}`;
   const id = String(product._id || product.id);
-
-  const existing = state.cart.find(
-    item => String(item._id || item.id) === id
-  );
+  const existing = state.cart.find(item => String(item._id || item.id) === id);
 
   if (existing) {
     existing.quantity += 1;
-    console.log("Increased quantity:", existing);
   } else {
-    const newProduct = { ...product, quantity: 1 };
-    state.cart.push(newProduct);
-    console.log("Added new product to cart:", newProduct);
+    state.cart.push({ ...product, quantity: 1 });
   }
 
-  // ✅ Now save the updated cart to localStorage
-  localStorage.setItem(key, JSON.stringify(state.cart));
+  saveCartToLocal(state); // ✅ call helper
 }
-
-
 ,
     SET_TOKEN(state,token){
         state.token=token;
@@ -54,22 +42,32 @@ ADD_TO_CART(state, product) {
      CLEAR_TOKEN(state) {
     state.token = '';
   },
- INCREMENT_QUANTITY(state, productId) {
+
+INCREMENT_QUANTITY(state, productId) {
   const id = String(productId);
-  const existing = state.cart.find(
-    item => String(item._id || item.id) === id
-  );
+  const existing = state.cart.find(item => String(item._id || item.id) === id);
   if (existing) {
     existing.quantity += 1;
-    console.log("Quantity incremented for:", existing);
-
-    const userId = state.loggedInUser?._id || state.loggedInUser?.id;
-    if (userId) {
-      const key = `cart_${userId}`;
-      localStorage.setItem(key, JSON.stringify(state.cart));
-    }
+    saveCartToLocal(state); // ✅
   }
+},
+
+DECREASE_QUANTITY(state, productId) {
+  const id = String(productId);
+  const existing = state.cart.find(item => String(item._id || item.id) === id);
+  if (existing && existing.quantity > 1) {
+    existing.quantity -= 1;
+    saveCartToLocal(state); // ✅
+  }
+},
+
+REMOVE_FROM_CART(state, productId) {
+  const id = String(productId);
+  state.cart = state.cart.filter(item => String(item._id || item.id) !== id);
+  saveCartToLocal(state); // ✅
 }
+
+
 
 };
 
@@ -147,6 +145,13 @@ const cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
       logout({commit}){
       commit('LOGOUT');
       },
+      decreaseQuantity({ commit }, productId) {
+  commit('DECREASE_QUANTITY', productId);
+},
+
+removeFromCart({ commit }, productId) {
+  commit('REMOVE_FROM_CART', productId);
+},
 
      addToCart({ commit, state }, product) {
   console.log("Inside auth/addToCart:", product);
@@ -175,6 +180,14 @@ const cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
 };
 
 
+// ✅ Add this before export
+function saveCartToLocal(state) {
+  const userId = state.loggedInUser?._id || state.loggedInUser?.id;
+  if (userId) {
+    const key = `cart_${userId}`;
+    localStorage.setItem(key, JSON.stringify(state.cart));
+  }
+}
 export default {
     namespaced:true,
     state,mutations,actions,getters
