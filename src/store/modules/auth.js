@@ -175,12 +175,17 @@ removeFromCart({ commit }, productId) {
   const getters = {
   getLoggedInUser: state => state.loggedInUser,
   isAuthenticated: state => !!state.token,
-  getCartCount: state => state.cart.reduce((sum, item) => sum + item.quantity, 0),
+  getCartCount: state =>  state.cart.length,
   getCartItems: (state) => state.cart,
+
+   getCartTotalPrice: state => {
+    return state.cart.reduce((total, item) => {
+      return total + item.price * item.quantity;
+    }, 0);
+  }
 };
 
 
-// ✅ Add this before export
 function saveCartToLocal(state) {
   const userId = state.loggedInUser?._id || state.loggedInUser?.id;
   if (userId) {
