@@ -9,7 +9,7 @@ Vue.config.productionTip = false;
 Vue.component('Carousel', Carousel);
 Vue.component('Slide', Slide);
 
-// ✅ Wait for Vuex auto login before mounting the app
+
 store.dispatch('auth/tryAutoLogin').finally(() => {
   new Vue({
     router,

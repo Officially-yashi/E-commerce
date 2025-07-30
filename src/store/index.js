@@ -187,5 +187,9 @@ removeFromCart({ commit }, id) {
 }
 
     },
-     plugins: [createPersistedState()]
+     plugins: [createPersistedState({
+      key: 'vuex',  // optional: name in localStorage
+      paths: ['auth.cart', 'auth.token','auth.loggedInUser'],  // ✅ persist these only
+      storage: window.localStorage,
+    })]
 });

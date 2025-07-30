@@ -11,22 +11,16 @@ const mutations ={
 ADD_TO_CART(state, product) {
   console.log("Inside ADD_TO_CART mutation");
 
-  const user = JSON.parse(JSON.stringify(state.loggedInUser));
-  console.log("Unwrapped loggedInUser:", user);
-
-  const userId = user?._id || user?.id; // ✅ fallback to id if _id doesn't exist
-
-  if (!userId) {
-    console.log("No logged in user.");
-    return;
-  }
+  const userId = state.loggedInUser?._id || state.loggedInUser?.id;
+  if (!userId) return;
 
   const key = `cart_${userId}`;
-     const id = String(product._id || product.id);
+  const id = String(product._id || product.id);
 
-      const existing = state.cart.find(
-      item => String(item._id || item.id) === id
-    );
+  const existing = state.cart.find(
+    item => String(item._id || item.id) === id
+  );
+
   if (existing) {
     existing.quantity += 1;
     console.log("Increased quantity:", existing);
@@ -36,8 +30,10 @@ ADD_TO_CART(state, product) {
     console.log("Added new product to cart:", newProduct);
   }
 
+  // ✅ Now save the updated cart to localStorage
   localStorage.setItem(key, JSON.stringify(state.cart));
 }
+
 
 ,
     SET_TOKEN(state,token){
@@ -129,17 +125,21 @@ async login({ commit }, { email, password }) {
 tryAutoLogin({ commit }) {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('loggedInUser'));
-
+  console.log("Auto login triggered. Token:", token);
+  console.log("User restored:", user);
   if (token && user) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     commit('SET_TOKEN', token);
     commit('SET_LOGGED_IN_USER', user);
 
   
-  const userId = user._id;
+  const userId = user._id||user.id  ;
 const cart = JSON.parse(localStorage.getItem(`cart_${userId}`)) || [];
-
+ console.log("Cart restored:", cart); 
     commit('SET_CART', cart); 
+  }
+  else {
+    console.log("Auto login skipped — token or user missing");
   }
 }
 

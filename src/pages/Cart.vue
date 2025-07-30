@@ -53,7 +53,7 @@
             <button @click="remove(item.id)" class="text-red-600 text-lg">✖</button>
           </td>
         </tr>
-      </tbody>
+      </tbody>  
     </table>
 
     <div class="text-right mt-6 text-xl font-bold">
@@ -71,28 +71,28 @@ export default {
     },
   computed: {
     cartItems() {
-      return this.$store.getters.getCartItems;
+      return this.$store.getters['auth/getCartItems'];
     },
     totalAmount() {
-  return this.$store.getters.getCartTotalPrice;
+  return this.$store.getters['auth/getCartTotalPrice'];
 }
 
   },
   methods: {
     increaseQty(id) {
-      this.$store.commit("INCREMENT_QUANTITY", id);
+      this.$store.commit("auth/INCREMENT_QUANTITY", id);
     },
     decreaseQty(id) {
-      this.$store.commit("DECREMENT_QUANTITY", id);
+      this.$store.commit("auth/DECREMENT_QUANTITY", id);
     },
      remove(id) {
-      this.$store.dispatch("removeFromCart", id);
-    },
+      this.$store.dispatch("auth/removeFromCart", id);
+    },  
     logout() {
   localStorage.removeItem('token');          // remove login token
-  this.$store.dispatch('clearCart');         // clear Vuex state
+  this.$store.dispatch('auth/clearCart');         // clear Vuex state
   localStorage.removeItem('vuex');           // ✅ remove persisted Vuex (like cart!)
-  this.$store.commit('LOGOUT');              // also clear loggedInUser from Vuex
+  this.$store.commit('auth/LOGOUT');              // also clear loggedInUser from Vuex
   this.$router.push('/login');               // go to login page
 }
 
