@@ -60,7 +60,7 @@
 
     <div class="flex justify-center mb-4">
       <img
-        :src="selectedProduct.image"
+        :src="selectedProduct.thumbnail "
         alt="Product Image"
         class="w-40 h-40 object-contain rounded shadow"
       />
@@ -113,6 +113,8 @@ export default {
     this.searchTerm = "";
     },
     selectProduct(product) {
+       console.log("Selected product:", product);
+      console.log("Image URL:", product.image);
       this.searchTerm = product.title;
       this.selectedProduct = product;
       this.showResults = false;
@@ -126,7 +128,10 @@ export default {
     }, 800),
   },
   created() {
-    this.$store.dispatch("fetchProducts");
+    this.$store.dispatch("fetchProducts").then(() => {
+    console.log("Products from store:", this.getAllProducts);
+     console.log("One product example:", this.getAllProducts[0]);
+  });
   },
 };
 </script>
